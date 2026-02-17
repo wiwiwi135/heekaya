@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hekaya AI - حكاية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Vazirmatn:wght@100;400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      :root {
+        --bg-color: #050505;
+        --text-color: #ffffff;
+        --accent-primary: #7c3aed;
+        --accent-secondary: #db2777;
+      }
+
+      body {
+        font-family: 'Vazirmatn', sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* Fancy Stars Background */
+      .stars-container {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        background: radial-gradient(ellipse at bottom, #0f172a 0%, #020617 100%);
+      }
+
+      .star {
+        position: absolute;
+        background: white;
+        border-radius: 50%;
+        animation: twinkle var(--duration) infinite ease-in-out;
+      }
+
+      .meteor {
+        position: absolute;
+        width: 2px; height: 2px;
+        background: linear-gradient(90deg, #fff, transparent);
+        box-shadow: 0 0 15px #fff;
+        animation: shoot var(--speed) linear infinite;
+        opacity: 0;
+      }
+
+      @keyframes twinkle {
+        0%, 100% { opacity: 0.2; transform: scale(0.8); }
+        50% { opacity: 0.9; transform: scale(1.1); }
+      }
+
+      @keyframes shoot {
+        0% { transform: translate(0, 0) rotate(-45deg); opacity: 0; }
+        10% { opacity: 1; }
+        100% { transform: translate(-600px, 600px) rotate(-45deg); opacity: 0; }
+      }
+
+      /* Royal Intro Overlay */
+      .intro-overlay {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        animation: fadeOutIntro 1.2s forwards 3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      @keyframes fadeOutIntro {
+        0% { opacity: 1; transform: scale(1); }
+        100% { opacity: 0; transform: scale(1.1); pointer-events: none; }
+      }
+
+      .logo-container {
+        position: relative;
+        text-align: center;
+      }
+
+      .logo-text {
+        font-size: 6rem;
+        font-weight: 900;
+        background: linear-gradient(90deg, #7c3aed, #db2777, #7c3aed);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 3s infinite linear, pulseLogo 2s infinite ease-in-out;
+      }
+
+      @keyframes shimmer { 0% { background-position: -200%; } 100% { background-position: 200%; } }
+      @keyframes pulseLogo { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(124,58,237,0)); } 50% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(124,58,237,0.5)); } }
+
+      .loading-bar-container {
+        width: 200px;
+        height: 2px;
+        background: rgba(255,255,255,0.05);
+        margin-top: 2rem;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .loading-bar {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, #7c3aed, #db2777);
+        transform: translateX(-100%);
+        animation: fillBar 2.5s forwards ease-in-out;
+      }
+
+      @keyframes fillBar { to { transform: translateX(0); } }
+
+      /* Novel Export Styles (Print Only) */
+      @media print {
+        body { background: white !important; color: black !important; }
+        .no-print { display: none !important; }
+        .novel-page {
+          display: block !important;
+          padding: 2.5cm !important;
+          font-family: 'Amiri', serif !important;
+          line-height: 2.2 !important;
+          color: #1a1a1a !important;
+        }
+        .novel-title { font-size: 42pt !important; text-align: center; margin-bottom: 3cm; font-weight: bold; border-bottom: 2px solid #eee; padding-bottom: 1rem; }
+        .narrator-text { margin-bottom: 2rem; text-align: justify; font-size: 16pt; text-indent: 1cm; }
+        .character-dialogue { margin: 1.5rem 0; font-style: italic; font-size: 14pt; color: #333; }
+      }
+
+      .vibrant-glass {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+        "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
+        "lucide-react": "https://esm.sh/lucide-react@^0.572.0",
+        "react/": "https://esm.sh/react@^19.2.4/",
+        "react": "https://esm.sh/react@^19.2.4"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <div class="intro-overlay" id="intro">
+      <div class="logo-container">
+        <div class="logo-text">حكاية</div>
+        <div class="text-white/30 text-[11px] font-black uppercase tracking-[0.6em] mt-4">خيال بلا حدود</div>
+        <div class="loading-bar-container">
+          <div class="loading-bar"></div>
+        </div>
+      </div>
+    </div>
+    <div class="stars-container" id="stars"></div>
+    <div id="root"></div>
+
+    <script>
+      const container = document.getElementById('stars');
+      for (let i = 0; i < 200; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 2 + 1 + 'px';
+        star.style.width = size; star.style.height = size;
+        star.style.top = Math.random() * 100 + '%';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.setProperty('--duration', Math.random() * 3 + 2 + 's');
+        container.appendChild(star);
+      }
+      setInterval(() => {
+        const m = document.createElement('div');
+        m.className = 'meteor';
+        m.style.top = Math.random() * 40 + '%';
+        m.style.left = Math.random() * 100 + '%';
+        m.style.setProperty('--speed', Math.random() * 1.5 + 0.5 + 's');
+        container.appendChild(m);
+        setTimeout(() => m.remove(), 2000);
+      }, 6000);
+    </script>
+  </body>
+</html>
