@@ -27,6 +27,9 @@ export interface Story {
   category: 'system' | 'user';
   dialect?: string;
   isHidden?: boolean;
+  characters?: Record<string, string>;
+  isLiked?: boolean;
+  isShared?: boolean;
 }
 
 export interface AppSettings {

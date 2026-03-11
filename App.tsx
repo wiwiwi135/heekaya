@@ -7,14 +7,18 @@ import { generateStoryMetadata } from './services/geminiService';
 import { 
   PlusCircle, Settings, Upload, ShieldCheck, 
   Search, Moon, Sun, ChevronRight, Loader2, 
-  Trash2, Info, Lock, Globe, FileUp, ShieldAlert
+  Trash2, Info, Lock, Globe, FileUp, ShieldAlert,
+  Heart, Share2, Sparkles, Clock
 } from 'lucide-react';
 
 declare const Swal: any;
 
 const SYSTEM_STORIES: Story[] = [
   { id: 's1', title: 'نيو طوكيو 2099', emoji: '🏙️', summary: 'الذكاء الاصطناعي يحكم من خلف الستار في مدينة النيون والمؤامرات السايبربانك.', userName: 'المستكشف نيو', description: 'مدينة النيون والمؤامرات.', category: 'system', messages: [], createdAt: Date.now(), dialect: 'العربية الفصحى' },
-  { id: 's2', title: 'مملكة الجليد', emoji: '❄️', summary: 'تنانين تحاصر آخر حصون البشر في شتاء أبدي ومعارك سحرية ملحمية.', userName: 'الفارس أرتور', description: 'برد قارس ومعركة ملحمية.', category: 'system', messages: [], createdAt: Date.now(), dialect: 'العربية الفصحى' },
+  { id: 's2', title: 'مملكة الجليد', emoji: '❄️', summary: 'تنانين تحاصر آخر حصون البشر في شتاء أبدي ومعارك سحرية ملحمية.', userName: 'الفارس أرتور', description: 'برد قارس ومعركة ملحمية سحرية.', category: 'system', messages: [], createdAt: Date.now(), dialect: 'العربية الفصحى' },
+  { id: 's3', title: 'لغز القطار السريع', emoji: '🚂', summary: 'جريمة غامضة على متن قطار يعبر جبال الألب، وكل الركاب مشتبه بهم.', userName: 'المحقق', description: 'جريمة غامضة وتحقيق بوليسي.', category: 'system', messages: [], createdAt: Date.now(), dialect: 'العربية الفصحى' },
+  { id: 's4', title: 'أطلال الفراعنة', emoji: '🏺', summary: 'مستكشفون يبحثون عن مقبرة مفقودة في صحراء مصر يواجهون لعنة قديمة.', userName: 'عالم الآثار', description: 'مغامرة تاريخية ولعنات فرعونية.', category: 'system', messages: [], createdAt: Date.now(), dialect: 'العربية الفصحى' },
+  { id: 's5', title: 'أكاديمية السحر', emoji: '✨', summary: 'طالب جديد يكتشف قوى مظلمة تهدد مدرسة السحرة العريقة.', userName: 'الطالب المبتدئ', description: 'مدرسة سحر وقوى خارقة.', category: 'system', messages: [], createdAt: Date.now(), dialect: 'العربية الفصحى' },
 ];
 
 const App: React.FC = () => {
@@ -125,13 +129,46 @@ const App: React.FC = () => {
       <div>
         <h4 className="text-2xl font-black mb-2 leading-tight group-hover:text-purple-400 transition-colors">{s.title}</h4>
         <p className="text-sm opacity-50 line-clamp-2 mb-6 font-medium leading-relaxed">{s.summary}</p>
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-4">
           <div className="px-3 py-1 bg-white/5 rounded-full text-[9px] font-black uppercase tracking-wider">{s.category}</div>
           <div className="px-3 py-1 bg-purple-500/10 rounded-full text-[9px] font-black text-purple-400 uppercase tracking-wider">{s.dialect?.split(' ')[0] || 'الفصحى'}</div>
+          {s.isLiked && <div className="px-3 py-1 bg-pink-500/10 rounded-full text-[9px] font-black text-pink-400 uppercase tracking-wider flex items-center gap-1"><Heart className="w-3 h-3 fill-current"/></div>}
+          {s.isShared && <div className="px-3 py-1 bg-blue-500/10 rounded-full text-[9px] font-black text-blue-400 uppercase tracking-wider flex items-center gap-1"><Share2 className="w-3 h-3"/></div>}
         </div>
       </div>
     </div>
   );
+
+  const getRecommendations = () => {
+    const userStories = stories.filter(s => s.category === 'user');
+    const incomplete = userStories.filter(s => s.messages.length > 0 && s.messages.length < 5);
+    const likedOrShared = userStories.filter(s => s.isLiked || s.isShared);
+    
+    const keywords = new Set<string>();
+    likedOrShared.forEach(s => {
+      s.summary.split(' ').forEach(w => {
+        if (w.length > 4) keywords.add(w);
+      });
+    });
+
+    let recommendedSystem = SYSTEM_STORIES.filter(sys => {
+      if (userStories.some(u => u.title === sys.title)) return false;
+      if (keywords.size === 0) return true;
+      const sysWords = sys.summary.split(' ');
+      return sysWords.some(w => keywords.has(w));
+    });
+
+    if (recommendedSystem.length === 0) {
+      recommendedSystem = SYSTEM_STORIES.filter(sys => !userStories.some(u => u.title === sys.title));
+    }
+
+    return {
+      incomplete: incomplete.slice(0, 3),
+      recommended: recommendedSystem.slice(0, 3)
+    };
+  };
+
+  const { incomplete, recommended } = getRecommendations();
 
   return (
     <div className="min-h-screen p-6 md:p-16 no-print">
@@ -152,6 +189,47 @@ const App: React.FC = () => {
           </header>
 
           <main className="space-y-20">
+            <section className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="vibrant-glass p-6 rounded-3xl text-center">
+                <div className="text-4xl font-black text-purple-400 mb-2">{stories.length}</div>
+                <div className="text-xs font-bold opacity-50 uppercase tracking-widest">{t('إجمالي القصص', 'Total Stories')}</div>
+              </div>
+              <div className="vibrant-glass p-6 rounded-3xl text-center">
+                <div className="text-4xl font-black text-pink-400 mb-2">{stories.reduce((acc, s) => acc + s.messages.length, 0)}</div>
+                <div className="text-xs font-bold opacity-50 uppercase tracking-widest">{t('إجمالي التفاعلات', 'Total Interactions')}</div>
+              </div>
+              <div className="vibrant-glass p-6 rounded-3xl text-center">
+                <div className="text-4xl font-black text-emerald-400 mb-2">{stories.reduce((acc, s) => acc + Object.keys(s.characters || {}).length, 0)}</div>
+                <div className="text-xs font-bold opacity-50 uppercase tracking-widest">{t('شخصيات مصورة', 'Avatar Characters')}</div>
+              </div>
+              <div className="vibrant-glass p-6 rounded-3xl text-center">
+                <div className="text-4xl font-black text-blue-400 mb-2">{stories.filter(s => s.category === 'user').length}</div>
+                <div className="text-xs font-bold opacity-50 uppercase tracking-widest">{t('قصصك الخاصة', 'Personal Stories')}</div>
+              </div>
+            </section>
+
+            <section>
+              <h3 className="text-2xl font-black mb-10 flex items-center gap-4"><div className="w-1 h-8 bg-pink-500 rounded-full"></div> {t('توصيات مخصصة لك', 'Personalized Recommendations')}</h3>
+              
+              {incomplete.length > 0 && (
+                <div className="mb-12">
+                  <h4 className="text-sm font-black opacity-50 uppercase tracking-widest mb-6 flex items-center gap-2"><Clock className="w-4 h-4"/> {t('قصص بدأتها ولم تكملها', 'Started but incomplete')}</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                    {incomplete.map(s => <StoryCard key={s.id} s={s}/>)}
+                  </div>
+                </div>
+              )}
+
+              {recommended.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-black opacity-50 uppercase tracking-widest mb-6 flex items-center gap-2"><Sparkles className="w-4 h-4"/> {t('بناءً على تفضيلاتك ومشاركاتك', 'Based on your likes and shares')}</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                    {recommended.map(s => <StoryCard key={s.id} s={s}/>)}
+                  </div>
+                </div>
+              )}
+            </section>
+
             <section>
               <h3 className="text-2xl font-black mb-10 flex items-center gap-4"><div className="w-1 h-8 bg-blue-500 rounded-full"></div> {t('عوالم مقترحة', 'System Worlds')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -205,7 +283,7 @@ const App: React.FC = () => {
       )}
 
       {state === AppState.SETUP && <StorySetup onStart={handleCreateStory} />}
-      {state === AppState.CHAT && currentStory && <ChatInterface story={currentStory} settings={settings} onUpdate={(msgs) => { const up = {...currentStory, messages: msgs}; setCurrentStory(up); if(up.category === 'user') setStories(stories.map(s => s.id === up.id ? up : s)); }} onExit={() => setState(AppState.LOBBY)} />}
+      {state === AppState.CHAT && currentStory && <ChatInterface story={currentStory} settings={settings} onUpdate={(up) => { setCurrentStory(up); if(up.category === 'user') setStories(stories.map(s => s.id === up.id ? up : s)); }} onExit={() => setState(AppState.LOBBY)} />}
       {state === AppState.GENERATING && <div className="h-[80vh] flex flex-col items-center justify-center space-y-12 animate-in zoom-in duration-500"><Loader2 className="w-24 h-24 text-purple-400 animate-spin"/><div className="text-center space-y-4"><p className="text-5xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{t('تجسيد الأبعاد...', 'Manifesting Dimensions...')}</p><p className="text-white/20 font-black tracking-[0.5em] text-xs">{t('ننسج خيوط القدر الآن', 'Fate is being woven')}</p></div></div>}
     </div>
   );
