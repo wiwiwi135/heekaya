@@ -88,6 +88,23 @@ const App: React.FC = () => {
     });
   };
 
+  const showTermsOfService = () => {
+    Swal.fire({
+      title: t('شروط الاستخدام (اتفاقية المستخدم)', 'Terms of Service'),
+      html: `
+        <div class="text-start text-sm space-y-4 max-h-72 overflow-y-auto custom-scroll p-4 bg-black/10 rounded-2xl leading-relaxed">
+          <p><b>1. القبول:</b> باستخدامك منصة "حكاية"، أنت توافق على الالتزام بشروط الاستخدام الخاصة بالمنصة.</p>
+          <p><b>2. الملكية الفكرية:</b> محتوى القصص المنشأة عبر الذكاء الاصطناعي ملك للمستخدم، ويمكن تداوله أو تصديره. لكن يجب عدم الإساءة لاستخدام المنصة لتوليد محتوى ضار.</p>
+          <p><b>3. الاستخدام العادل:</b> المنصة مصممة للتسلية والخيال. يمنع استخدامها في إيذاء الآخرين أو بث الكراهية.</p>
+          <p><b>4. إخلاء المسؤولية:</b> المنصة مقدمة "كما هي". القصص والردود مولدة آلياً وأي تشابه مع الواقع هو محض صدفة أو من خيال المستخدم.</p>
+        </div>
+      `,
+      confirmButtonText: t('أوافق', 'I Agree'),
+      background: settings.theme === 'dark' ? '#111' : '#fff',
+      color: settings.theme === 'dark' ? '#fff' : '#000',
+    });
+  };
+
   const handleCreateStory = async (data: Partial<Story>) => {
     setState(AppState.GENERATING);
     try {
@@ -175,8 +192,9 @@ const App: React.FC = () => {
       {state === AppState.LOBBY && (
         <div className="max-w-7xl mx-auto space-y-20 animate-in fade-in duration-700">
           <header className="flex flex-col lg:flex-row justify-between items-center gap-10">
-            <div className="text-center lg:text-start">
+            <div className="text-center lg:text-start relative">
               <h1 className="text-8xl font-black tracking-tighter bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent leading-[1.1]">حكاية</h1>
+              <span className="absolute -top-4 -right-8 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg rotate-12">Production</span>
               <p className="text-white/20 font-bold uppercase tracking-[0.5em] text-[10px] mt-2">{t('المخيلة الرقمية في خدمتك', 'Digital Imagination At Service')}</p>
             </div>
             <div className="flex flex-wrap justify-center gap-4">
@@ -285,6 +303,20 @@ const App: React.FC = () => {
       {state === AppState.SETUP && <StorySetup onStart={handleCreateStory} />}
       {state === AppState.CHAT && currentStory && <ChatInterface story={currentStory} settings={settings} onUpdate={(up) => { setCurrentStory(up); if(up.category === 'user') setStories(stories.map(s => s.id === up.id ? up : s)); }} onExit={() => setState(AppState.LOBBY)} />}
       {state === AppState.GENERATING && <div className="h-[80vh] flex flex-col items-center justify-center space-y-12 animate-in zoom-in duration-500"><Loader2 className="w-24 h-24 text-purple-400 animate-spin"/><div className="text-center space-y-4"><p className="text-5xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{t('تجسيد الأبعاد...', 'Manifesting Dimensions...')}</p><p className="text-white/20 font-black tracking-[0.5em] text-xs">{t('ننسج خيوط القدر الآن', 'Fate is being woven')}</p></div></div>}
+
+      {/* Production Footer */}
+      {state !== AppState.CHAT && state !== AppState.GENERATING && (
+        <footer className="mt-20 pt-10 border-t border-white/10 text-center text-white/40 text-sm max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+           <div className="text-center md:text-start">
+             <p className="font-bold">© {new Date().getFullYear()} حكاية للذكاء الاصطناعي. {t('جميع الحقوق محفوظة.', 'All rights reserved.')}</p>
+             <p className="text-[10px] mt-2 opacity-60 uppercase tracking-widest font-mono">v1.2.0 • Production Build</p>
+           </div>
+           <div className="flex flex-wrap justify-center gap-6 font-bold text-xs uppercase tracking-widest">
+              <button onClick={showPrivacyPolicy} className="hover:text-purple-400 transition-colors">{t('سياسة الخصوصية', 'Privacy Policy')}</button>
+              <button onClick={showTermsOfService} className="hover:text-pink-400 transition-colors">{t('شروط الاستخدام', 'Terms of Service')}</button>
+           </div>
+        </footer>
+      )}
     </div>
   );
 };

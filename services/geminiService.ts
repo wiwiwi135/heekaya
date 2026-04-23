@@ -41,11 +41,11 @@ const responseSchema = {
   required: ["narratorText", "suggestions"],
 };
 
-// Removed getApiKey as the key is now obtained exclusively from process.env.API_KEY
+// Removed getApiKey as the key is now obtained exclusively from process.env.GEMINI_API_KEY
 
 export const generateStoryMetadata = async (userName: string, description: string) => {
   // Initialize AI client right before use with the environment variable API_KEY
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
   const schema = {
     type: Type.OBJECT,
@@ -71,7 +71,7 @@ export const generateStoryMetadata = async (userName: string, description: strin
 
 export const summarizeStoryArc = async (history: string) => {
   // Initialize AI client with the environment variable API_KEY
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `لخص أحداث هذه القصة في نقاط زمنية قصيرة كخريطة طريق: \n\n ${history}`,
@@ -80,7 +80,7 @@ export const summarizeStoryArc = async (history: string) => {
 };
 
 export const generateAvatarPrompt = async (characterName: string, storyContext: string) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   
   try {
     const response = await ai.models.generateContent({
@@ -97,7 +97,7 @@ The prompt should describe their physical appearance, clothing, lighting, and mo
 };
 
 export const generateCharacterAvatar = async (promptText: string) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   
   try {
     const response = await ai.models.generateContent({
@@ -135,7 +135,7 @@ export const generateStoryResponse = async (
   description: string,
   dialect: string = 'العربية الفصحى'
 ) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   
   try {
     const response = await ai.models.generateContent({
